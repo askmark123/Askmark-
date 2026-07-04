@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Norwich Weather Forecast</title>
+<meta name="description" content="Live weather forecast for Norwich, England, UK.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛅</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg-decor" aria-hidden="true"></div>
+
+<main class="page">
+  <header class="page-header">
+    <div class="title-block">
+      <h1>Norwich Weather</h1>
+      <p class="subtitle">England, United Kingdom</p>
+    </div>
+    <button id="unit-toggle" class="unit-toggle" type="button" aria-label="Toggle temperature units">°C</button>
+  </header>
+
+  <section id="status" class="status" role="status" aria-live="polite">Loading forecast…</section>
+
+  <section id="current" class="current-card" hidden>
+    <div class="current-main">
+      <div class="current-icon" id="current-icon" aria-hidden="true">🌤️</div>
+      <div class="current-temp-block">
+        <div class="current-temp"><span id="current-temp">--</span>°</div>
+        <div class="current-desc" id="current-desc">--</div>
+      </div>
+    </div>
+    <dl class="current-stats">
+      <div><dt>Feels like</dt><dd><span id="current-feels">--</span>°</dd></div>
+      <div><dt>Wind</dt><dd><span id="current-wind">--</span> mph</dd></div>
+      <div><dt>Humidity</dt><dd><span id="current-humidity">--</span>%</dd></div>
+      <div><dt>Rain chance</dt><dd><span id="current-rain">--</span>%</dd></div>
+    </dl>
+  </section>
+
+  <section class="hourly-section" hidden id="hourly-section">
+    <h2>Next 24 hours</h2>
+    <div class="hourly-scroll" id="hourly-scroll"></div>
+  </section>
+
+  <section class="daily-section" hidden id="daily-section">
+    <h2>7-day forecast</h2>
+    <div class="daily-grid" id="daily-grid"></div>
+  </section>
+
+  <footer class="page-footer">
+    <p>Weather data from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>. Last updated <span id="updated-at">--</span>.</p>
+  </footer>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
