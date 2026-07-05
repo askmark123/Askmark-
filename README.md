@@ -10,7 +10,7 @@ world. Defaults to Norwich, England, but you can search for any city or town.
 - Search for any city or town worldwide, pick a spot on an interactive map, or use your current location; remembers your last choice
 - Current conditions, next 24 hours, and a 7-day outlook
 - Data from [Open-Meteo](https://open-meteo.com/) (no API key required), fetched live in the browser
-- Map powered by [Leaflet](https://leafletjs.com/) and [OpenStreetMap](https://www.openstreetmap.org/copyright) tiles; map clicks are reverse-geocoded via [Nominatim](https://nominatim.org/)
+- Map powered by [Leaflet](https://leafletjs.com/) with [CARTO](https://carto.com/attributions) tiles (English-labeled worldwide, built on [OpenStreetMap](https://www.openstreetmap.org/copyright) data); map clicks are reverse-geocoded via [Nominatim](https://nominatim.org/)
 - Plain HTML/CSS/JS, no build step, works offline of the fetch itself
 - Light/dark theme toggle (remembers your choice) and °C/°F toggle, auto-refreshes every 15 minutes
 
