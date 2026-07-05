@@ -1,4 +1,4 @@
-name: Deploy Norwich Weather site to GitHub Pages
+name: Deploy Askmark Weather site to GitHub Pages
 
 on:
   push:
