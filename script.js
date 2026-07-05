@@ -190,6 +190,7 @@
       var detailParts = [];
       if (r.admin2 && r.admin2 !== r.name) detailParts.push(r.admin2);
       if (r.admin1 && r.admin1 !== r.name) detailParts.push(r.admin1);
+      if (r.country) detailParts.push(r.country);
       var detailEl = document.createElement("div");
       detailEl.className = "lr-detail";
       detailEl.textContent = detailParts.join(", ");
@@ -209,7 +210,7 @@
 
     var url = GEOCODE_URL +
       "?name=" + encodeURIComponent(query) +
-      "&count=8&language=en&format=json&countryCode=GB";
+      "&count=8&language=en&format=json";
 
     fetch(url, { signal: searchAbortController.signal })
       .then(function (res) { return res.json(); })
@@ -286,16 +287,14 @@
     if (!e.target.closest(".location-search")) hideResults();
   });
 
-  var UK_BOUNDS = [[49.5, -8.8], [61.1, 2.1]];
   var map = null;
   var mapMarker = null;
 
   function ensureMap() {
     if (map) return;
     map = L.map(els.locationMap, {
-      minZoom: 5,
-      maxBounds: UK_BOUNDS,
-      maxBoundsViscosity: 1.0
+      minZoom: 2,
+      worldCopyJump: true
     }).setView([state.location.latitude, state.location.longitude], 8);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {

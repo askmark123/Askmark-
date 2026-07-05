@@ -2,12 +2,12 @@
 
 **Live demo:** [GitHub Pages](https://askmark123.github.io/Askmark-/) · [Vercel](https://askmark-weather.vercel.app/)
 
-A small static website showing live UK weather forecasts. Defaults to Norwich,
-England, but you can search for any UK town or city.
+A small static website showing live weather forecasts for anywhere in the
+world. Defaults to Norwich, England, but you can search for any city or town.
 
 ![Askmark Weather preview](assets/preview.png)
 
-- Search any UK town or city by name, pick a spot on an interactive map, or use your current location; remembers your last choice
+- Search for any city or town worldwide, pick a spot on an interactive map, or use your current location; remembers your last choice
 - Current conditions, next 24 hours, and a 7-day outlook
 - Data from [Open-Meteo](https://open-meteo.com/) (no API key required), fetched live in the browser
 - Map powered by [Leaflet](https://leafletjs.com/) and [OpenStreetMap](https://www.openstreetmap.org/copyright) tiles; map clicks are reverse-geocoded via [Nominatim](https://nominatim.org/)
