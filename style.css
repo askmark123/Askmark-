@@ -101,7 +101,14 @@ body {
   font-size: 1rem;
 }
 
-.unit-toggle {
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.unit-toggle,
+.icon-toggle {
   border: 1px solid var(--card-border);
   background: var(--card-bg);
   color: var(--text-primary);
@@ -115,8 +122,14 @@ body {
   transition: transform 0.15s ease;
 }
 
-.unit-toggle:hover { transform: translateY(-1px); }
-.unit-toggle:active { transform: translateY(0); }
+.icon-toggle {
+  padding: 8px 14px;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.unit-toggle:hover, .icon-toggle:hover { transform: translateY(-1px); }
+.unit-toggle:active, .icon-toggle:active { transform: translateY(0); }
 
 .status {
   margin-top: 40px;

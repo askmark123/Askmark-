@@ -71,8 +71,26 @@
     dailySection: document.getElementById("daily-section"),
     dailyGrid: document.getElementById("daily-grid"),
     updatedAt: document.getElementById("updated-at"),
-    unitToggle: document.getElementById("unit-toggle")
+    unitToggle: document.getElementById("unit-toggle"),
+    themeToggle: document.getElementById("theme-toggle")
   };
+
+  function currentTheme() {
+    return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    els.themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+
+  applyTheme(currentTheme());
+
+  els.themeToggle.addEventListener("click", function () {
+    var next = currentTheme() === "dark" ? "light" : "dark";
+    applyTheme(next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  });
 
   function cToF(c) { return c * 9 / 5 + 32; }
 
