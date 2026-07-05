@@ -1,19 +1,39 @@
 (function () {
   "use strict";
 
-  var LAT = 52.6286;
-  var LON = 1.2926;
-  var TIMEZONE = "Europe/London";
   var REFRESH_MS = 15 * 60 * 1000;
+  var GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
 
-  var API_URL =
-    "https://api.open-meteo.com/v1/forecast" +
-    "?latitude=" + LAT + "&longitude=" + LON +
-    "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m,is_day" +
-    "&hourly=temperature_2m,precipitation_probability,weather_code" +
-    "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
-    "&timezone=" + encodeURIComponent(TIMEZONE) +
-    "&forecast_days=7";
+  var DEFAULT_LOCATION = {
+    name: "Norwich",
+    admin1: "England",
+    country: "United Kingdom",
+    latitude: 52.6286,
+    longitude: 1.2926,
+    timezone: "Europe/London"
+  };
+
+  function loadStoredLocation() {
+    try {
+      var raw = localStorage.getItem("location");
+      if (!raw) return DEFAULT_LOCATION;
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.latitude === "number" && typeof parsed.longitude === "number") {
+        return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_LOCATION;
+  }
+
+  function buildApiUrl(location) {
+    return "https://api.open-meteo.com/v1/forecast" +
+      "?latitude=" + location.latitude + "&longitude=" + location.longitude +
+      "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m,is_day" +
+      "&hourly=temperature_2m,precipitation_probability,weather_code" +
+      "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+      "&timezone=" + encodeURIComponent(location.timezone || "Europe/London") +
+      "&forecast_days=7";
+  }
 
   // WMO weather interpretation codes -> [emoji, label]
   var WEATHER_CODES = {
@@ -54,7 +74,7 @@
     return entry;
   }
 
-  var state = { unit: "C", data: null };
+  var state = { unit: "C", data: null, location: loadStoredLocation() };
 
   var els = {
     status: document.getElementById("status"),
@@ -72,7 +92,11 @@
     dailyGrid: document.getElementById("daily-grid"),
     updatedAt: document.getElementById("updated-at"),
     unitToggle: document.getElementById("unit-toggle"),
-    themeToggle: document.getElementById("theme-toggle")
+    themeToggle: document.getElementById("theme-toggle"),
+    locationName: document.getElementById("location-name"),
+    locationSubtitle: document.getElementById("location-subtitle"),
+    locationInput: document.getElementById("location-input"),
+    locationResults: document.getElementById("location-results")
   };
 
   function currentTheme() {
@@ -90,6 +114,162 @@
     var next = currentTheme() === "dark" ? "light" : "dark";
     applyTheme(next);
     try { localStorage.setItem("theme", next); } catch (e) {}
+  });
+
+  var lastResults = [];
+  var activeIndex = -1;
+  var searchDebounceId = null;
+  var searchAbortController = null;
+
+  function updateLocationHeader(location) {
+    els.locationName.textContent = location.name;
+    var parts = [];
+    if (location.admin1 && location.admin1 !== location.name) parts.push(location.admin1);
+    if (location.country) parts.push(location.country);
+    els.locationSubtitle.textContent = parts.join(", ");
+  }
+
+  function resetToLoading() {
+    els.status.hidden = false;
+    els.status.classList.remove("error");
+    els.status.textContent = "Loading forecast…";
+    els.current.hidden = true;
+    els.hourlySection.hidden = true;
+    els.dailySection.hidden = true;
+  }
+
+  function hideResults() {
+    els.locationResults.hidden = true;
+    els.locationResults.innerHTML = "";
+    els.locationInput.setAttribute("aria-expanded", "false");
+    activeIndex = -1;
+  }
+
+  function highlightActive(items) {
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle("is-active", i === activeIndex);
+    }
+    if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: "nearest" });
+  }
+
+  function renderResults(results) {
+    lastResults = results;
+    activeIndex = -1;
+    els.locationResults.innerHTML = "";
+
+    if (!results.length) {
+      var empty = document.createElement("li");
+      empty.className = "location-empty";
+      empty.textContent = "No matches found";
+      els.locationResults.appendChild(empty);
+      els.locationResults.hidden = false;
+      els.locationInput.setAttribute("aria-expanded", "true");
+      return;
+    }
+
+    results.forEach(function (r, i) {
+      var li = document.createElement("li");
+      li.className = "location-result";
+      li.setAttribute("role", "option");
+      li.setAttribute("data-index", String(i));
+
+      var nameEl = document.createElement("div");
+      nameEl.className = "lr-name";
+      nameEl.textContent = r.name;
+
+      var detailParts = [];
+      if (r.admin2 && r.admin2 !== r.name) detailParts.push(r.admin2);
+      if (r.admin1 && r.admin1 !== r.name) detailParts.push(r.admin1);
+      var detailEl = document.createElement("div");
+      detailEl.className = "lr-detail";
+      detailEl.textContent = detailParts.join(", ");
+
+      li.appendChild(nameEl);
+      li.appendChild(detailEl);
+      els.locationResults.appendChild(li);
+    });
+
+    els.locationResults.hidden = false;
+    els.locationInput.setAttribute("aria-expanded", "true");
+  }
+
+  function runSearch(query) {
+    if (searchAbortController) searchAbortController.abort();
+    searchAbortController = new AbortController();
+
+    var url = GEOCODE_URL +
+      "?name=" + encodeURIComponent(query) +
+      "&count=8&language=en&format=json&countryCode=GB";
+
+    fetch(url, { signal: searchAbortController.signal })
+      .then(function (res) { return res.json(); })
+      .then(function (data) { renderResults(data.results || []); })
+      .catch(function (err) {
+        if (err.name === "AbortError") return;
+        renderResults([]);
+      });
+  }
+
+  function scheduleSearch(query) {
+    if (searchDebounceId) clearTimeout(searchDebounceId);
+    searchDebounceId = setTimeout(function () { runSearch(query); }, 300);
+  }
+
+  function selectLocation(location) {
+    state.location = location;
+    try { localStorage.setItem("location", JSON.stringify(location)); } catch (e) {}
+    updateLocationHeader(location);
+    hideResults();
+    els.locationInput.value = "";
+    resetToLoading();
+    load();
+  }
+
+  els.locationInput.addEventListener("input", function () {
+    var query = els.locationInput.value.trim();
+    if (query.length < 2) {
+      if (searchDebounceId) clearTimeout(searchDebounceId);
+      hideResults();
+      return;
+    }
+    scheduleSearch(query);
+  });
+
+  els.locationInput.addEventListener("keydown", function (e) {
+    var items = els.locationResults.querySelectorAll(".location-result");
+    if (e.key === "ArrowDown") {
+      if (!items.length) return;
+      e.preventDefault();
+      activeIndex = (activeIndex + 1) % items.length;
+      highlightActive(items);
+    } else if (e.key === "ArrowUp") {
+      if (!items.length) return;
+      e.preventDefault();
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+      highlightActive(items);
+    } else if (e.key === "Enter") {
+      if (activeIndex >= 0 && items[activeIndex]) {
+        e.preventDefault();
+        items[activeIndex].click();
+      } else if (items.length === 1) {
+        e.preventDefault();
+        items[0].click();
+      }
+    } else if (e.key === "Escape") {
+      hideResults();
+    }
+  });
+
+  els.locationResults.addEventListener("click", function (e) {
+    var item = e.target.closest(".location-result");
+    if (!item) return;
+    var idx = Number(item.getAttribute("data-index"));
+    var location = lastResults[idx];
+    if (location) selectLocation(location);
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".location-search")) hideResults();
   });
 
   function cToF(c) { return c * 9 / 5 + 32; }
@@ -175,7 +355,7 @@
   }
 
   function load() {
-    fetch(API_URL)
+    fetch(buildApiUrl(state.location))
       .then(function (res) {
         if (!res.ok) throw new Error("Weather service returned " + res.status);
         return res.json();
@@ -195,6 +375,7 @@
     if (state.data) render(state.data);
   });
 
+  updateLocationHeader(state.location);
   load();
   setInterval(load, REFRESH_MS);
 })();

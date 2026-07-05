@@ -23,14 +23,28 @@
 <main class="page">
   <header class="page-header">
     <div class="title-block">
-      <h1>Norwich Weather</h1>
-      <p class="subtitle">England, United Kingdom</p>
+      <h1><span id="location-name">Norwich</span> Weather</h1>
+      <p class="subtitle" id="location-subtitle">England, United Kingdom</p>
     </div>
     <div class="header-controls">
       <button id="theme-toggle" class="icon-toggle" type="button" aria-label="Toggle light/dark theme">🌙</button>
       <button id="unit-toggle" class="unit-toggle" type="button" aria-label="Toggle temperature units">°C</button>
     </div>
   </header>
+
+  <div class="location-search">
+    <input
+      type="text"
+      id="location-input"
+      class="location-input"
+      placeholder="Search UK town or city…"
+      autocomplete="off"
+      role="combobox"
+      aria-expanded="false"
+      aria-controls="location-results"
+      aria-label="Search for a UK location">
+    <ul id="location-results" class="location-results" role="listbox" hidden></ul>
+  </div>
 
   <section id="status" class="status" role="status" aria-live="polite">Loading forecast…</section>
 
