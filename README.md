@@ -1,6 +1,6 @@
 # Norwich Weather
 
-**[Live demo →](https://askmark123.github.io/Askmark-/)**
+**Live demo:** [GitHub Pages](https://askmark123.github.io/Askmark-/) · [Vercel](https://askmark-weather.vercel.app/)
 
 A small static website showing the live weather forecast for Norwich, England, UK.
 
@@ -17,11 +17,14 @@ A small static website showing the live weather forecast for Norwich, England, U
 - `style.css` – styling
 - `script.js` – fetches the forecast and renders it
 
-## Hosting on GitHub Pages
+## Hosting
 
-A workflow at `.github/workflows/pages.yml` deploys this site to GitHub Pages
-automatically on every push to `main`. Requires repo **Settings → Pages →
-Build and deployment → Source** set to **GitHub Actions**.
+- **GitHub Pages** – a workflow at `.github/workflows/pages.yml` deploys this
+  site automatically on every push to `main`. Requires repo
+  **Settings → Pages → Build and deployment → Source** set to
+  **GitHub Actions**.
+- **Vercel** – connected directly to this repo via Vercel's Git integration;
+  it also redeploys automatically on every push to `main`.
 
 ## Local preview
 
