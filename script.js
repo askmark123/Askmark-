@@ -91,6 +91,7 @@
     currentDesc: document.getElementById("current-desc"),
     currentFeels: document.getElementById("current-feels"),
     currentWind: document.getElementById("current-wind"),
+    windUnit: document.getElementById("wind-unit"),
     currentHumidity: document.getElementById("current-humidity"),
     currentRain: document.getElementById("current-rain"),
     hourlySection: document.getElementById("hourly-section"),
@@ -168,12 +169,7 @@
     els.locationResults.innerHTML = "";
 
     if (!results.length) {
-      var empty = document.createElement("li");
-      empty.className = "location-empty";
-      empty.textContent = "No matches found";
-      els.locationResults.appendChild(empty);
-      els.locationResults.hidden = false;
-      els.locationInput.setAttribute("aria-expanded", "true");
+      showLocationMessage("No matches found");
       return;
     }
 
@@ -247,6 +243,7 @@
       hideResults();
       return;
     }
+    showLocationMessage("Searching…");
     scheduleSearch(query);
   });
 
@@ -371,7 +368,7 @@
           var message = "Couldn't get your location.";
           if (err.code === err.PERMISSION_DENIED) message = "Location access denied.";
           else if (err.code === err.TIMEOUT) message = "Location request timed out.";
-          showGeoMessage(message);
+          showLocationMessage(message);
           els.geolocateBtn.disabled = false;
         },
         { timeout: 10000 }
@@ -379,19 +376,26 @@
     });
   }
 
-  function showGeoMessage(message) {
+  function showLocationMessage(message) {
     els.locationResults.innerHTML = "";
     var li = document.createElement("li");
     li.className = "location-empty";
     li.textContent = message;
     els.locationResults.appendChild(li);
     els.locationResults.hidden = false;
+    els.locationInput.setAttribute("aria-expanded", "true");
   }
 
   function cToF(c) { return c * 9 / 5 + 32; }
+  function kmhToMph(kmh) { return kmh * 0.621371; }
 
   function fmtTemp(celsius) {
     var v = state.unit === "C" ? celsius : cToF(celsius);
+    return Math.round(v);
+  }
+
+  function fmtWind(kmh) {
+    var v = state.unit === "C" ? kmh : kmhToMph(kmh);
     return Math.round(v);
   }
 
@@ -418,7 +422,8 @@
     els.currentTemp.textContent = fmtTemp(current.temperature_2m);
     els.currentDesc.textContent = wi[1];
     els.currentFeels.textContent = fmtTemp(current.apparent_temperature);
-    els.currentWind.textContent = Math.round(current.wind_speed_10m);
+    els.currentWind.textContent = fmtWind(current.wind_speed_10m);
+    els.windUnit.textContent = state.unit === "C" ? "km/h" : "mph";
     els.currentHumidity.textContent = Math.round(current.relative_humidity_2m);
     els.currentRain.textContent = Math.round(current.precipitation_probability != null ? current.precipitation_probability : 0);
 
