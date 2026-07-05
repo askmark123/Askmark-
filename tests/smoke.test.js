@@ -23,18 +23,20 @@ test("forecast API returns expected shape for the default location (Norwich)", a
   assert.ok(Array.isArray(data.daily.time) && data.daily.time.length === 7);
 });
 
-test("geocoding API returns UK matches for a known town name", async () => {
-  const url = "https://geocoding-api.open-meteo.com/v1/search?name=Norwich&count=5&language=en&format=json&countryCode=GB";
+test("geocoding API returns worldwide matches for a known town name", async () => {
+  const url = "https://geocoding-api.open-meteo.com/v1/search?name=London&count=10&language=en&format=json";
 
   const res = await fetch(url);
   assert.equal(res.ok, true);
   const data = await res.json();
 
-  assert.ok(Array.isArray(data.results) && data.results.length > 0, "expected at least one UK result");
+  assert.ok(Array.isArray(data.results) && data.results.length > 0, "expected at least one result");
   for (const key of ["name", "latitude", "longitude", "country"]) {
     assert.ok(key in data.results[0], 'result missing "' + key + '"');
   }
-  assert.equal(data.results[0].country_code, "GB");
+
+  const countries = new Set(data.results.map((r) => r.country));
+  assert.ok(countries.size > 1, "expected matches from more than one country (search is not UK-restricted)");
 });
 
 test("Nominatim reverse geocoding returns address details for a UK point", async () => {
