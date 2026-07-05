@@ -317,13 +317,16 @@
 
   function reverseGeocode(lat, lon) {
     var url = "https://nominatim.openstreetmap.org/reverse" +
-      "?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=10&addressdetails=1";
+      "?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=16&addressdetails=1";
 
     return fetch(url)
       .then(function (res) { return res.json(); })
       .then(function (data) {
         var addr = data.address || {};
-        var name = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || addr.county || "Pinned location";
+        // Prefer town/village over city: at low zoom Nominatim's "city" field can
+        // resolve to an administrative district (e.g. "South Norfolk") rather than
+        // an actual settlement, while the real place name only shows up here.
+        var name = addr.town || addr.village || addr.city || addr.hamlet || addr.suburb || addr.county || "Pinned location";
         return {
           name: name,
           admin1: addr.state || addr.county || "",
