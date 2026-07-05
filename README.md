@@ -7,7 +7,7 @@ England, but you can search for any UK town or city.
 
 ![Askmark Weather preview](assets/preview.png)
 
-- Search any UK town or city by name, or pick a spot on an interactive map; remembers your last choice
+- Search any UK town or city by name, pick a spot on an interactive map, or use your current location; remembers your last choice
 - Current conditions, next 24 hours, and a 7-day outlook
 - Data from [Open-Meteo](https://open-meteo.com/) (no API key required), fetched live in the browser
 - Map powered by [Leaflet](https://leafletjs.com/) and [OpenStreetMap](https://www.openstreetmap.org/copyright) tiles; map clicks are reverse-geocoded via [Nominatim](https://nominatim.org/)
@@ -33,3 +33,11 @@ England, but you can search for any UK town or city.
 
 Just open `index.html` in a browser, or serve the folder with any static
 file server, e.g. `python3 -m http.server`.
+
+## Testing
+
+`npm test` runs a dependency-free smoke test suite (Node's built-in test
+runner) that checks the Open-Meteo/Nominatim API response shapes and
+verifies every DOM id referenced in `script.js` exists in `index.html`.
+Runs automatically on every push and pull request via
+`.github/workflows/test.yml`.

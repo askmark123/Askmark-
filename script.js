@@ -9,8 +9,7 @@
     admin1: "England",
     country: "United Kingdom",
     latitude: 52.6286,
-    longitude: 1.2926,
-    timezone: "Europe/London"
+    longitude: 1.2926
   };
 
   function loadStoredLocation() {
@@ -31,7 +30,7 @@
       "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m,is_day" +
       "&hourly=temperature_2m,precipitation_probability,weather_code" +
       "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
-      "&timezone=" + encodeURIComponent(location.timezone || "Europe/London") +
+      "&timezone=auto" +
       "&forecast_days=7";
   }
 
@@ -74,7 +73,15 @@
     return entry;
   }
 
-  var state = { unit: "C", data: null, location: loadStoredLocation() };
+  function loadStoredUnit() {
+    try {
+      var stored = localStorage.getItem("unit");
+      if (stored === "C" || stored === "F") return stored;
+    } catch (e) {}
+    return "C";
+  }
+
+  var state = { unit: loadStoredUnit(), data: null, location: loadStoredLocation() };
 
   var els = {
     status: document.getElementById("status"),
@@ -98,7 +105,8 @@
     locationInput: document.getElementById("location-input"),
     locationResults: document.getElementById("location-results"),
     mapToggle: document.getElementById("map-toggle"),
-    locationMap: document.getElementById("location-map")
+    locationMap: document.getElementById("location-map"),
+    geolocateBtn: document.getElementById("geolocate-btn")
   };
 
   function currentTheme() {
@@ -309,30 +317,31 @@
 
   function reverseGeocode(lat, lon) {
     var url = "https://nominatim.openstreetmap.org/reverse" +
-      "?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=10&addressdetails=1";
+      "?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=16&addressdetails=1";
 
     return fetch(url)
       .then(function (res) { return res.json(); })
       .then(function (data) {
         var addr = data.address || {};
-        var name = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || addr.county || "Pinned location";
+        // Prefer town/village over city: at low zoom Nominatim's "city" field can
+        // resolve to an administrative district (e.g. "South Norfolk") rather than
+        // an actual settlement, while the real place name only shows up here.
+        var name = addr.town || addr.village || addr.city || addr.hamlet || addr.suburb || addr.county || "Pinned location";
         return {
           name: name,
           admin1: addr.state || addr.county || "",
-          country: addr.country || "United Kingdom",
+          country: addr.country || "",
           latitude: lat,
-          longitude: lon,
-          timezone: "Europe/London"
+          longitude: lon
         };
       })
       .catch(function () {
         return {
           name: lat.toFixed(2) + ", " + lon.toFixed(2),
           admin1: "",
-          country: "United Kingdom",
+          country: "",
           latitude: lat,
-          longitude: lon,
-          timezone: "Europe/London"
+          longitude: lon
         };
       });
   }
@@ -346,6 +355,39 @@
       setTimeout(function () { map.invalidateSize(); }, 0);
     }
   });
+
+  if (!navigator.geolocation) {
+    els.geolocateBtn.hidden = true;
+  } else {
+    els.geolocateBtn.addEventListener("click", function () {
+      els.geolocateBtn.disabled = true;
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          reverseGeocode(pos.coords.latitude, pos.coords.longitude).then(function (location) {
+            selectLocation(location);
+            els.geolocateBtn.disabled = false;
+          });
+        },
+        function (err) {
+          var message = "Couldn't get your location.";
+          if (err.code === err.PERMISSION_DENIED) message = "Location access denied.";
+          else if (err.code === err.TIMEOUT) message = "Location request timed out.";
+          showGeoMessage(message);
+          els.geolocateBtn.disabled = false;
+        },
+        { timeout: 10000 }
+      );
+    });
+  }
+
+  function showGeoMessage(message) {
+    els.locationResults.innerHTML = "";
+    var li = document.createElement("li");
+    li.className = "location-empty";
+    li.textContent = message;
+    els.locationResults.appendChild(li);
+    els.locationResults.hidden = false;
+  }
 
   function cToF(c) { return c * 9 / 5 + 32; }
 
@@ -441,15 +483,18 @@
       })
       .catch(function (err) {
         showError("Couldn't load the forecast right now (" + err.message + "). Retrying shortly…");
+        setTimeout(load, 30000);
       });
   }
 
   els.unitToggle.addEventListener("click", function () {
     state.unit = state.unit === "C" ? "F" : "C";
     els.unitToggle.textContent = "°" + state.unit;
+    try { localStorage.setItem("unit", state.unit); } catch (e) {}
     if (state.data) render(state.data);
   });
 
+  els.unitToggle.textContent = "°" + state.unit;
   updateLocationHeader(state.location);
   load();
   setInterval(load, REFRESH_MS);
