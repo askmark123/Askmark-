@@ -96,7 +96,9 @@
     locationName: document.getElementById("location-name"),
     locationSubtitle: document.getElementById("location-subtitle"),
     locationInput: document.getElementById("location-input"),
-    locationResults: document.getElementById("location-results")
+    locationResults: document.getElementById("location-results"),
+    mapToggle: document.getElementById("map-toggle"),
+    locationMap: document.getElementById("location-map")
   };
 
   function currentTheme() {
@@ -223,6 +225,10 @@
     els.locationInput.value = "";
     resetToLoading();
     load();
+    if (map && mapMarker) {
+      mapMarker.setLatLng([location.latitude, location.longitude]);
+      map.panTo([location.latitude, location.longitude]);
+    }
   }
 
   els.locationInput.addEventListener("input", function () {
@@ -270,6 +276,75 @@
 
   document.addEventListener("click", function (e) {
     if (!e.target.closest(".location-search")) hideResults();
+  });
+
+  var UK_BOUNDS = [[49.5, -8.8], [61.1, 2.1]];
+  var map = null;
+  var mapMarker = null;
+
+  function ensureMap() {
+    if (map) return;
+    map = L.map(els.locationMap, {
+      minZoom: 5,
+      maxBounds: UK_BOUNDS,
+      maxBoundsViscosity: 1.0
+    }).setView([state.location.latitude, state.location.longitude], 8);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    mapMarker = L.marker([state.location.latitude, state.location.longitude]).addTo(map);
+
+    map.on("click", function (e) {
+      handleMapClick(e.latlng.lat, e.latlng.lng);
+    });
+  }
+
+  function handleMapClick(lat, lon) {
+    mapMarker.setLatLng([lat, lon]);
+    reverseGeocode(lat, lon).then(selectLocation);
+  }
+
+  function reverseGeocode(lat, lon) {
+    var url = "https://nominatim.openstreetmap.org/reverse" +
+      "?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=10&addressdetails=1";
+
+    return fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var addr = data.address || {};
+        var name = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || addr.county || "Pinned location";
+        return {
+          name: name,
+          admin1: addr.state || addr.county || "",
+          country: addr.country || "United Kingdom",
+          latitude: lat,
+          longitude: lon,
+          timezone: "Europe/London"
+        };
+      })
+      .catch(function () {
+        return {
+          name: lat.toFixed(2) + ", " + lon.toFixed(2),
+          admin1: "",
+          country: "United Kingdom",
+          latitude: lat,
+          longitude: lon,
+          timezone: "Europe/London"
+        };
+      });
+  }
+
+  els.mapToggle.addEventListener("click", function () {
+    var willShow = els.locationMap.hidden;
+    els.locationMap.hidden = !willShow;
+    els.mapToggle.setAttribute("aria-pressed", String(willShow));
+    if (willShow) {
+      ensureMap();
+      setTimeout(function () { map.invalidateSize(); }, 0);
+    }
   });
 
   function cToF(c) { return c * 9 / 5 + 32; }
