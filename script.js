@@ -313,7 +313,7 @@
 
   function reverseGeocode(lat, lon) {
     var url = "https://nominatim.openstreetmap.org/reverse" +
-      "?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=16&addressdetails=1";
+      "?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=16&addressdetails=1&accept-language=en";
 
     return fetch(url)
       .then(function (res) { return res.json(); })

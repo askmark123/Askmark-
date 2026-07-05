@@ -40,7 +40,7 @@ test("geocoding API returns worldwide matches for a known town name", async () =
 });
 
 test("Nominatim reverse geocoding returns address details for a UK point", async () => {
-  const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=52.6286&lon=1.2926&zoom=16&addressdetails=1";
+  const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=52.6286&lon=1.2926&zoom=16&addressdetails=1&accept-language=en";
 
   const res = await fetch(url, { headers: { "User-Agent": "AskmarkWeatherTests/1.0 (CI smoke test)" } });
   assert.equal(res.ok, true);
@@ -54,7 +54,7 @@ test("reverse-geocoded name prefers village/town over an administrative district
   // Hethersett, Norfolk: Nominatim's "city" field resolves to the "South Norfolk"
   // district here rather than an actual place; the real name only shows up in
   // "village". Mirrors the priority order in reverseGeocode() in script.js.
-  const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=52.6083&lon=1.1653&zoom=16&addressdetails=1";
+  const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=52.6083&lon=1.1653&zoom=16&addressdetails=1&accept-language=en";
 
   const res = await fetch(url, { headers: { "User-Agent": "AskmarkWeatherTests/1.0 (CI smoke test)" } });
   assert.equal(res.ok, true);
@@ -63,6 +63,18 @@ test("reverse-geocoded name prefers village/town over an administrative district
   const name = addr.town || addr.village || addr.city || addr.hamlet || addr.suburb || addr.county || "Pinned location";
 
   assert.equal(name, "Hethersett");
+});
+
+test("reverse-geocoded place names are in English, not the local language (regression)", async () => {
+  // Berlin, Germany: without accept-language=en, Nominatim returns the country
+  // as "Deutschland" instead of "Germany".
+  const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=52.52&lon=13.405&zoom=16&addressdetails=1&accept-language=en";
+
+  const res = await fetch(url, { headers: { "User-Agent": "AskmarkWeatherTests/1.0 (CI smoke test)" } });
+  assert.equal(res.ok, true);
+  const data = await res.json();
+
+  assert.equal(data.address.country, "Germany");
 });
 
 test("every DOM id referenced in script.js exists in index.html", () => {
