@@ -1,0 +1,8 @@
+{
+  "name": "askmark-weather",
+  "private": true,
+  "description": "Askmark Weather - live UK weather forecasts (static site)",
+  "scripts": {
+    "test": "node --test"
+  }
+}
