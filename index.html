@@ -16,6 +16,8 @@
 })();
 </script>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
 </head>
 <body>
 <div class="bg-decor" aria-hidden="true"></div>
@@ -33,17 +35,21 @@
   </header>
 
   <div class="location-search">
-    <input
-      type="text"
-      id="location-input"
-      class="location-input"
-      placeholder="Search UK town or city…"
-      autocomplete="off"
-      role="combobox"
-      aria-expanded="false"
-      aria-controls="location-results"
-      aria-label="Search for a UK location">
+    <div class="location-search-row">
+      <input
+        type="text"
+        id="location-input"
+        class="location-input"
+        placeholder="Search UK town or city…"
+        autocomplete="off"
+        role="combobox"
+        aria-expanded="false"
+        aria-controls="location-results"
+        aria-label="Search for a UK location">
+      <button id="map-toggle" class="icon-toggle" type="button" aria-pressed="false" aria-label="Pick location on map">🗺️</button>
+    </div>
     <ul id="location-results" class="location-results" role="listbox" hidden></ul>
+    <div id="location-map" class="location-map" hidden></div>
   </div>
 
   <section id="status" class="status" role="status" aria-live="polite">Loading forecast…</section>
@@ -79,6 +85,8 @@
   </footer>
 </main>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
 <script src="script.js"></script>
 </body>
 </html>

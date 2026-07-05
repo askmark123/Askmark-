@@ -106,8 +106,14 @@ body {
   margin-top: 20px;
 }
 
+.location-search-row {
+  display: flex;
+  gap: 10px;
+}
+
 .location-input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   border: 1px solid var(--card-border);
   background: var(--card-bg);
   color: var(--text-primary);
@@ -120,6 +126,19 @@ body {
 
 .location-input::placeholder { color: var(--text-muted); }
 .location-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.location-search-row .icon-toggle { flex-shrink: 0; }
+
+.location-map {
+  margin-top: 10px;
+  height: 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+}
+
+.location-map[hidden] { display: none; }
 
 .location-results {
   position: absolute;

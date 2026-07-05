@@ -7,9 +7,10 @@ England, but you can search for any UK town or city.
 
 ![Norwich Weather preview](assets/preview.png)
 
-- Search any UK town or city by name; remembers your last choice
+- Search any UK town or city by name, or pick a spot on an interactive map; remembers your last choice
 - Current conditions, next 24 hours, and a 7-day outlook
 - Data from [Open-Meteo](https://open-meteo.com/) (no API key required), fetched live in the browser
+- Map powered by [Leaflet](https://leafletjs.com/) and [OpenStreetMap](https://www.openstreetmap.org/copyright) tiles; map clicks are reverse-geocoded via [Nominatim](https://nominatim.org/)
 - Plain HTML/CSS/JS, no build step, works offline of the fetch itself
 - Light/dark theme aware, °C/°F toggle, auto-refreshes every 15 minutes
 
