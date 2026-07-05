@@ -1,11 +1,11 @@
-# Norwich Weather
+# Askmark Weather
 
 **Live demo:** [GitHub Pages](https://askmark123.github.io/Askmark-/) · [Vercel](https://askmark-weather.vercel.app/)
 
 A small static website showing live UK weather forecasts. Defaults to Norwich,
 England, but you can search for any UK town or city.
 
-![Norwich Weather preview](assets/preview.png)
+![Askmark Weather preview](assets/preview.png)
 
 - Search any UK town or city by name, or pick a spot on an interactive map; remembers your last choice
 - Current conditions, next 24 hours, and a 7-day outlook
