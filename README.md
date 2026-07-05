@@ -12,7 +12,7 @@ England, but you can search for any UK town or city.
 - Data from [Open-Meteo](https://open-meteo.com/) (no API key required), fetched live in the browser
 - Map powered by [Leaflet](https://leafletjs.com/) and [OpenStreetMap](https://www.openstreetmap.org/copyright) tiles; map clicks are reverse-geocoded via [Nominatim](https://nominatim.org/)
 - Plain HTML/CSS/JS, no build step, works offline of the fetch itself
-- Light/dark theme aware, °C/°F toggle, auto-refreshes every 15 minutes
+- Light/dark theme toggle (remembers your choice) and °C/°F toggle, auto-refreshes every 15 minutes
 
 ## Files
 
